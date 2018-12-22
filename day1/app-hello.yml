@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: app-hello
-        image: aliaslol/apache2-hello
+        image: jany22727/apache2-hello
         ports:
         - name: http
           containerPort: 80
