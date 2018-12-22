@@ -1,0 +1,6 @@
+---
+# tasks file for roles/app-hello
+- name: Install app-hello
+  command: kubectl apply -f https://raw.githubusercontent.com/Aliaslol/lab/master/kubernetes/day1/app-hello.yml
+  register: result_app_hello
+  changed_when: "'unchanged' not in result_app_hello.stdout"

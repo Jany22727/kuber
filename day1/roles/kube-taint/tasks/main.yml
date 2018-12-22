@@ -1,0 +1,38 @@
+---
+# tasks file for roles/kube-taint
+- name: Ensure .kube directory exists
+  file:
+    path: ~/.kube
+    state: directory
+
+- name: copy admin.conf to ~/.kube/conf.
+  become: yes
+  copy:
+     remote_src: yes
+     src: /etc/kubernetes/admin.conf
+     dest: /home/vagrant/.kube/config
+     owner: vagrant
+     group: vagrant
+
+- name: Download kube-flannel
+  get_url:
+    url: https://raw.githubusercontent.com/coreos/flannel/bc79dd1505b0c8681ece4de4c0d86c5cd2643275/Documentation/kube-flannel.yml
+    dest: /home/vagrant/kube-flannel.yml
+
+# - name: copy kube-flannel.yml
+#   become: yes
+#   copy:
+#     src: kube-flannel.yml
+#     dest: /home/vagrant/kube-flannel.yml
+
+- name: apply flannel
+  shell: kubectl apply -f /home/vagrant/kube-flannel.yml
+  register: result_flannel
+  changed_when: "'unchanged' not in result_flannel.stdout"   
+
+- name: taint nodes
+  command: kubectl taint nodes --all node-role.kubernetes.io/master-
+  register: kubectl_taint
+  failed_when: "'failed' in kubectl_taint.stderr"
+  changed_when: "'not found' not in kubectl_taint.stderr"  
+  

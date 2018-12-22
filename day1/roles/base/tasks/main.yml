@@ -1,0 +1,23 @@
+---
+# tasks file for roles/base
+- name: update system
+  become: yes
+  yum:
+    name: ['net-tools']
+    state: latest
+  notify:
+  - save update facts  
+
+- name: List updated packages
+  shell: /usr/bin/rpm -qa --last | grep "`date +%a\ %d\ %b`" | awk '{print $1}'
+  args:
+    executable: /bin/bash
+  register: updates
+  changed_when: false
+
+- name: Ensure Facts Directory Exists
+  become: yes 
+  file:
+    path: /etc/ansible/facts.d
+    recurse: yes
+    state: directory  

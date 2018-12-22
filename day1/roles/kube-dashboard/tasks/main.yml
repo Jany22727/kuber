@@ -1,0 +1,22 @@
+---
+# tasks file for roles/kube-dashboard
+
+- name: Install dashboard
+  command: kubectl apply -f https://rawgit.com/kubernetes/dashboard/bfab10151f012d1acc5dfb1979f3172e2400aa3c/src/deploy/kubernetes-dashboard.yaml
+  register: result_dashboard
+  changed_when: "'unchanged' not in result_dashboard.stdout"
+
+- name: copy cert from kubernetes
+  become: yes
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/jane/.kube/config
+    flat: yes
+
+- name: add permissions to dashboard
+  command: |
+    kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
+  register: result_add_dashboard
+  failed_when: "'AlreadyExists' not in result_add_dashboard.stderr" 
+  #or 'created' not in result_add_dashboard.stdout"
+  changed_when: "'AlreadyExists' not in result_add_dashboard.stderr" 

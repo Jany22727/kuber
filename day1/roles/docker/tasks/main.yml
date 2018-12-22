@@ -1,0 +1,50 @@
+---
+# tasks file for roles/docker
+
+- name: Add docker repository
+  become: yes
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+
+- name: Install docker 
+  become: yes
+  yum:
+    name: ['yum-utils', 'device-mapper-persistent-data', 'lvm2', 'docker-ce']
+    state: present
+  register: docker_install
+
+- name: Ensure docker directory exists
+  become: yes
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: create docker config
+  become: yes
+  copy: 
+    content: >
+      {
+        "exec-opts": [
+          "native.cgroupdriver=systemd"
+        ],
+        "storage-driver": "devicemapper"
+      }
+    dest: /etc/docker/daemon.json
+  register: docker_config
+
+- name: restart docker
+  become: yes
+  systemd:
+    name: docker
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  when: docker_config.changed or docker_install.changed
+
+- name: Add user vagrant to docker group
+  user:
+    name: vagrant
+    groups: docker
+    append: yes
+  become: yes

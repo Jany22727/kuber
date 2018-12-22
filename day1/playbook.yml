@@ -1,0 +1,11 @@
+- name: Install 
+  hosts: all
+  gather_facts: yes
+  roles:
+     #- base
+     #- docker
+     #- kube-install
+     #- kube-taint
+     #- kube-ingress
+     - kube-dashboard
+     - app-hello

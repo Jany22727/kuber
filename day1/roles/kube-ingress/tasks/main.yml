@@ -1,0 +1,24 @@
+---
+# tasks file for roles/kube-ingress
+
+- name: namespace
+  command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/namespace.yaml
+  register: result_namespace
+  changed_when: "'unchanged' not in result_namespace.stdout"
+
+
+- name: mandatory
+  command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/mandatory.yaml
+  register: result_mandatory
+  changed_when: "'unchanged' not in result_mandatory.stdout"
+
+- name: service-nodeport
+  command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/provider/baremetal/service-nodeport.yaml
+  register: result_service
+  changed_when: "'unchanged' not in result_service.stdout"
+
+- name: add external IP
+  command: |
+    kubectl patch svc ingress-nginx -n ingress-nginx --patch '{ "spec": {"externalIPs": [ "{{ ansible_enp0s8.ipv4.address }}" ] }}'
+  register: result_patch
+  changed_when: "'no change' not in result_patch.stdout"    

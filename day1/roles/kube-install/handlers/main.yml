@@ -1,0 +1,8 @@
+---
+# handlers file for roles/kubernetes
+
+- name: restart kubelet
+  become: yes
+  service: 
+    name: kubelet 
+    state: restarted
